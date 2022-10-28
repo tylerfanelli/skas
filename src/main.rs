@@ -2,7 +2,7 @@ use std::io::Read;
 
 use anyhow::Result;
 use curl::easy::{Easy, List};
-use kbs_types::Register;
+use kbs_types::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -94,8 +94,8 @@ fn extract_session_id(header: &[u8]) -> Option<String> {
 }
 
 pub fn register_workload(
-    mut curl: CurlAgent,
-    config: TeeConfig,
+    curl: &mut CurlAgent,
+    config: &TeeConfig,
     launch_measurement: String,
     passphrase: String,
 ) -> Result<()> {
@@ -110,26 +110,72 @@ pub fn register_workload(
     let data = serde_json::json!(register).to_string();
     let bytes = data.as_bytes();
 
-    let response = curl.post(&url, bytes).unwrap();
+    let _response = curl.post(&url, bytes).unwrap();
 
     Ok(())
 }
 
+pub fn request_challenge(curl: &mut CurlAgent, config: &TeeConfig) -> Result<Challenge> {
+    let url = format!("{}/kbs/v0/register_workload", config.attestation_url);
+
+    let snp_req = SnpRequest {
+        workload_id: config.workload_id.clone(),
+    };
+
+    let req = Request {
+        version: "0.0.0".to_string(),
+        tee: config.tee.clone(),
+        extra_params: serde_json::to_string(&snp_req).unwrap(),
+    };
+
+    let data = serde_json::json!(req).to_string();
+    let bytes = data.as_bytes();
+
+    let url = format!("{}/kbs/v0/auth", config.attestation_url);
+
+    let response = curl.post(&url, bytes).unwrap();
+
+    let challenge: Challenge = serde_json::from_slice(&response).unwrap();
+
+    Ok(challenge)
+}
+
 #[test]
-fn registration() {
+#[ignore]
+fn registration_test() {
     let config = TeeConfig {
         workload_id: "id".to_string(),
         cpus: 1,
         ram_mib: 1,
-        tee: kbs_types::Tee::Snp,
+        tee: Tee::Snp,
         tee_data: "".to_string(),
         attestation_url: "http://127.0.0.1:8000".to_string(),
     };
 
-    let curl = CurlAgent::default();
+    let mut curl = CurlAgent::default();
 
     let measurement = "MEASUREMENT".to_string();
     let passphrase = "mysecretpassphrase".to_string();
 
-    register_workload(curl, config, measurement, passphrase).unwrap();
+    register_workload(&mut curl, &config, measurement, passphrase).unwrap();
+}
+
+#[test]
+fn request_challenge_test() {
+    let mut curl = CurlAgent::default();
+    let config = TeeConfig {
+        workload_id: "id2".to_string(),
+        cpus: 2,
+        ram_mib: 1,
+        tee: Tee::Snp,
+        tee_data: "".to_string(),
+        attestation_url: "http://127.0.0.1:8000".to_string(),
+    };
+
+    let measurement = "MEASUREMENT2".to_string();
+    let passphrase = "mysecretpassphrase2".to_string();
+
+    register_workload(&mut curl, &config, measurement, passphrase).unwrap();
+
+    let _challenge = request_challenge(&mut curl, &config).unwrap();
 }
