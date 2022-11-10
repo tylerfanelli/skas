@@ -116,8 +116,6 @@ pub fn register_workload(
 }
 
 pub fn request_challenge(curl: &mut CurlAgent, config: &TeeConfig) -> Result<Challenge> {
-    let url = format!("{}/kbs/v0/register_workload", config.attestation_url);
-
     let snp_req = SnpRequest {
         workload_id: config.workload_id.clone(),
     };
@@ -140,9 +138,31 @@ pub fn request_challenge(curl: &mut CurlAgent, config: &TeeConfig) -> Result<Cha
     Ok(challenge)
 }
 
+pub fn attest(curl: &mut CurlAgent, config: &TeeConfig, snp: SnpAttestation) -> Result<String> {
+    let key = TeePubKey {
+        kty: "hello".to_string(),
+        alg: "world".to_string(),
+        k: ":)".to_string(),
+    };
+
+    let attestation = Attestation {
+        tee_pubkey: key,
+        tee_evidence: serde_json::json!(snp).to_string(),
+    };
+
+    let data = serde_json::json!(attestation).to_string();
+    let bytes = data.as_bytes();
+
+    let url = format!("{}/kbs/v0/attest", config.attestation_url);
+
+    let _response = curl.post(&url, bytes).unwrap();
+
+    Ok("hello world".to_string())
+}
+
 #[test]
 #[ignore]
-fn registration_test() {
+fn snp_registration_test() {
     let config = TeeConfig {
         workload_id: "id".to_string(),
         cpus: 1,
@@ -161,7 +181,7 @@ fn registration_test() {
 }
 
 #[test]
-fn request_challenge_test() {
+fn snp_request_challenge_test() {
     let mut curl = CurlAgent::default();
     let config = TeeConfig {
         workload_id: "id2".to_string(),
@@ -177,5 +197,44 @@ fn request_challenge_test() {
 
     register_workload(&mut curl, &config, measurement, passphrase).unwrap();
 
-    let _challenge = request_challenge(&mut curl, &config).unwrap();
+    let challenge = request_challenge(&mut curl, &config).unwrap();
+
+    println!("{:?}", challenge);
+}
+
+#[test]
+fn snp_attest() {
+    let mut curl = CurlAgent::default();
+    let config = TeeConfig {
+        workload_id: "id3".to_string(),
+        cpus: 2,
+        ram_mib: 1,
+        tee: Tee::Snp,
+        tee_data: "".to_string(),
+        attestation_url: "http://127.0.0.1:8000".to_string(),
+    };
+
+    let measurement = "MEASUREMENT3".to_string();
+    let passphrase = "mysecretpassphrase3".to_string();
+
+    let m = measurement.clone();
+
+    register_workload(&mut curl, &config, measurement, passphrase).unwrap();
+
+    let challenge = request_challenge(&mut curl, &config).unwrap();
+
+    let nonce = challenge.nonce;
+
+    let snp_attest = SnpAttestation {
+        nonce,
+        measurement: m,
+    };
+
+    let passphrase = attest(&mut curl, &config, snp_attest).unwrap();
+
+    println!("PASSPHRASE: {}", passphrase);
+}
+
+fn main() {
+    println!("Hello world!");
 }

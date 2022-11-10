@@ -9,5 +9,5 @@ edition = "2021"
 anyhow = "1.0.65"
 serde = "1.0.145"
 serde_json = "1.0.86"
-kbs-types = { git = "https://github.com/tylerfanelli/kbs-types.git", branch = "snp", features = [ "tee-snp" ] }
+kbs-types = { git = "https://github.com/tylerfanelli/kbs-types.git", branch = "snp", features = [ "tee-sev" ] }
 curl = "0.4.44"

@@ -16,9 +16,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "bitfield"
-version = "0.13.2"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46afbd2983a5d5a7bd740ccb198caf5b82f45c40c09c0eed36052d91cb92e719"
+checksum = "2d7e60934ceec538daadb9d8432424ed043a904d8e0243f3c6446bce549a46ac"
 
 [[package]]
 name = "bitflags"
@@ -135,11 +135,31 @@ checksum = "4217ad341ebadf8d8e724e264f13e593e0648f5b3e94b3896a5df283be015ecc"
 [[package]]
 name = "kbs-types"
 version = "0.0.0"
-source = "git+https://github.com/tylerfanelli/kbs-types.git?branch=snp#3cfe28cd0ca97484c9c6bf3f7a7596e7f9fae706"
+source = "git+https://github.com/tylerfanelli/kbs-types.git?branch=snp#015a7e6fdda30847f8106ea519ee92f507b01bac"
 dependencies = [
  "serde",
  "serde_json",
  "sev",
+]
+
+[[package]]
+name = "kvm-bindings"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efe70e65a5b092161d17f5005b66e5eefe7a94a70c332e755036fc4af78c4e79"
+dependencies = [
+ "vmm-sys-util",
+]
+
+[[package]]
+name = "kvm-ioctls"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97422ba48d7ffb66fd4d18130f72ab66f9bbbf791fb7a87b9291cdcfec437593"
+dependencies = [
+ "kvm-bindings",
+ "libc",
+ "vmm-sys-util",
 ]
 
 [[package]]
@@ -168,9 +188,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.15.0"
+version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
+checksum = "86f0b0d4bf799edbc74508c1e8bf170ff5f41238e5f8225603ca7caaae2b7860"
 
 [[package]]
 name = "openssl"
@@ -328,19 +348,21 @@ dependencies = [
 
 [[package]]
 name = "sev"
-version = "0.3.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2919b04dac9b0fb31814196863cfa6e749db09706af24071e96ebbac80649172"
+checksum = "a0f33a7caa04c072e7bd4b19205a1d9c5f876533ba9fb04f5740083a4c8c4a7b"
 dependencies = [
  "bitfield",
  "bitflags",
  "codicon",
  "dirs",
  "iocuddle",
+ "kvm-ioctls",
  "openssl",
  "serde",
  "serde-big-array",
  "serde_bytes",
+ "static_assert_macro",
 ]
 
 [[package]]
@@ -363,6 +385,12 @@ dependencies = [
  "libc",
  "winapi",
 ]
+
+[[package]]
+name = "static_assert_macro"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8aa19fe1f820914e252c747ee699215bba50c0f7b38af8828e4a85f79142fedb"
 
 [[package]]
 name = "syn"
@@ -406,6 +434,16 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vmm-sys-util"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc06a16ee8ebf0d9269aed304030b0d20a866b8b3dd3d4ce532596ac567a0d24"
+dependencies = [
+ "bitflags",
+ "libc",
+]
 
 [[package]]
 name = "wasi"
